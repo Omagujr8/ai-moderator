@@ -1,12 +1,3 @@
-# from app.core.celery import celery_app
-#from app.services.moderation_service import run_moderation
-
-
-# @celery_app.task
-# def run_moderation(content_id: int):
-#     print(f"[MODERATION] Running moderation for content ID: {content_id}")
-
-
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
 from app.models.content import Content
@@ -14,6 +5,7 @@ from app.ai.nlp.toxicity import analyze_text
 from app.ai.pipelines.decision_engine import decide_text
 from app.ai.vision.nsfw import analyze_image
 from app.models.moderation_result import ModerationResult
+from app.services.webhook_service import send_webhook
 
 
 def save_results(db, content_id, results, decision):
@@ -47,5 +39,13 @@ def run_moderation(content_id:int):
 
     content.status = decision
     db.commit()
-    db.close()
 
+    payload = {
+        "content_id": content_id,
+        "decision": decision,
+        "status": content.status
+    }
+
+    send_webhook("https://client-app/webhook",payload)
+
+    db.close()
