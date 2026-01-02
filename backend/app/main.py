@@ -12,7 +12,6 @@ app.include_router(
     tags=["Moderation"]
 )
 
-
 @app.get("/")
 def root():
     return {"status": "Ok", "Service": settings.APP_NAME}
