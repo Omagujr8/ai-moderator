@@ -6,7 +6,14 @@ from app.models.moderation_result import ModerationResult
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
-@router.get("/summary")
+@router.get(
+    "/summary",
+    dependencies=[Depends(require_role("admin"))]
+)
+
+def admin_analytics():
+    return {"message": "Admin-only analytics data"}
+
 def summary(db: Session = Depends(get_db)):
     return db.query(
         ModerationResult.category,
