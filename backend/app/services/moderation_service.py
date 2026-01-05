@@ -6,6 +6,7 @@ from app.ai.pipelines.decision_engine import decide_text
 from app.ai.vision.nsfw import analyze_image
 from app.models.moderation_result import ModerationResult
 from app.services.webhook_service import send_webhook
+from app.core.logging import logger
 
 
 def save_results(db, content_id, results, decision):
@@ -39,6 +40,10 @@ def run_moderation(content_id:int):
 
     content.status = decision
     db.commit()
+
+    logger.info(
+        f"Content {content.id} | Decision: {decision} | Source: {content.source_app}"
+    )
 
     payload = {
         "content_id": content_id,
