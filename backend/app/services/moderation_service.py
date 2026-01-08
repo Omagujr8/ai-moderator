@@ -5,13 +5,20 @@ from app.ai.nlp.toxicity import analyze_text
 from app.ai.pipelines.decision_engine import decide_text
 from app.ai.vision.nsfw import analyze_image
 from app.models.moderation_result import ModerationResult
-from app.services.webhook_service import send_webhook
+#from app.services.webhook_service import send_webhook
 from app.core.logging import logger
 from app.ai.nlp.toxicity_multilingual import analyze_text_multilingual
 from app.ai.nlp.language_detect import detect_language
 from app.services.video_moderation_service import moderate_video
+import time
+from app.core.metrics import (
+    moderation_requests_total,
+    moderation_decisions_total,
+    moderation_duration_seconds
+)
 
-def save_results(db, content_id, results, decision):
+
+def save_results(db, content_id, results, decision, model_version):
     for r in results:
         db.add(
             ModerationResult(
@@ -19,12 +26,14 @@ def save_results(db, content_id, results, decision):
                 category=r["label"],
                 score=r["score"],
                 decision=decision,
-                model_version="v1-toxic-bert"
+                model_version=model_version
             )
         )
 def run_moderation(content_id:int):
     db: Session = SessionLocal()
     content = db.query(Content).get(content_id)
+    start_time = time.time()
+    moderation_requests_total.inc()
 
     if not content:
         db.close()
@@ -39,7 +48,15 @@ def run_moderation(content_id:int):
         else:
             text_results = analyze_text_multilingual(content.text)
 
-        decision = decide_text(text_results)
+        decision, model_version = decide_text(text_results)
+
+        save_results(
+            db=db,
+            content_id=content.id,
+            results=text_results,
+            decision=decision,
+            model_version=model_version
+        )
 
     if content.image_url:
         image_results = analyze_image(content.image_url)
@@ -51,6 +68,8 @@ def run_moderation(content_id:int):
         if not safe:
             decision = "blocked"
 
+    moderation_decisions_total.labels(decision=decision).inc()
+
     content.status = decision
     db.commit()
 
@@ -61,9 +80,10 @@ def run_moderation(content_id:int):
     payload = {
         "content_id": content_id,
         "decision": decision,
-        "status": content.status
+        "status": content.status,
+        "model_version": model_version
     }
 
-    send_webhook("https://client-app/webhook",payload)
+    #send_webhook("https://client-app/webhook",payload)
 
     db.close()

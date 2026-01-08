@@ -4,8 +4,12 @@ from app.core.config import settings
 from app.api.v1.moderation import router as moderation_router
 from slowapi.errors import RateLimitExceeded
 from app.core.rate_limit import limiter
+from prometheus_fastapi_instrumentator import Instrumentator
+
 
 app = FastAPI(title=settings.APP_NAME)
+
+Instrumentator().instrument(app).expose(app)
 
 app.state.limiter = limiter
 

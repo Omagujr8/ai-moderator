@@ -11,6 +11,13 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
     dependencies=[Depends(require_role("admin"))]
 )
 
+@router.get("/model-performance")
+def model_performance(db: Session = Depends(get_db)):
+    return db.query(
+        ModerationResult.model_version,
+        func.count().label("count")
+    ).group_by(ModerationResult.model_version).all()
+
 def admin_analytics():
     return {"message": "Admin-only analytics data"}
 

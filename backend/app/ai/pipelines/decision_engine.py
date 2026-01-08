@@ -1,11 +1,10 @@
 def decide_text(results):
-    if not results:
-        return "approved"
+    model_version = "xlm-roberta-base-toxic-v1"
 
-    max_score =  max(r['score'] for r in results)
+    decision = (
+        "blocked"
+        if any(r["score"] > 0.85 for r in results)
+        else "approved"
+    )
 
-    if max_score > 0.9 :
-        return "blocked"
-
-    return "flagged"
-
+    return decision, model_version

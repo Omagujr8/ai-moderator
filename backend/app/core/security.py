@@ -1,5 +1,7 @@
-from fastapi import Header, HTTPException
+from fastapi import Header, HTTPException,Security
 from app.core.config import settings
+from fastapi.security import APIKeyHeader
+
 
 API_KEYS = {
     "test-key-123": {"role": "client"},

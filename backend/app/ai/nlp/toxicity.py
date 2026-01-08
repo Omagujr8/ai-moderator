@@ -15,11 +15,17 @@
 #                 'score': item['score']})
 #
 #     return flagged
+from app.ai.model_registry import ACTIVE_TOXICITY_MODEL
 
 def analyze_text(text: str):
-    # Temporary stub (no transformers yet)
+    model_version = select_model()
+
+    if model_version == "toxicity_v1.2":
+        results = new_classifier(text)
+    else:
+        results = old_classifier(text)
+
     return {
-        "toxicity": 0.1,
-        "hate": 0.0,
-        "sexual": 0.0
+        "results": results,
+        "model_version": model_version
     }
