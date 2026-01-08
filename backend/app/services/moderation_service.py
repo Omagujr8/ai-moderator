@@ -7,7 +7,8 @@ from app.ai.vision.nsfw import analyze_image
 from app.models.moderation_result import ModerationResult
 from app.services.webhook_service import send_webhook
 from app.core.logging import logger
-
+from app.ai.nlp.toxicity_multilingual import analyze_text_multilingual
+from app.ai.nlp.language_detect import detect_language
 
 def save_results(db, content_id, results, decision):
     for r in results:
@@ -30,7 +31,13 @@ def run_moderation(content_id:int):
     decision = "approved"
 
     if content.text:
-        text_results = analyze_text(content.text)
+        lang = detect_language(content.text)
+
+        if lang == "en":
+            text_results = analyze_text(content.text)
+        else:
+            text_results = analyze_text_multilingual(content.text)
+
         decision = decide_text(text_results)
 
     if content.image_url:
