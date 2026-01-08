@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     REDIS_URL:str
     API_KEY_HEADER:str
 
+    DELETE_AFTER_DAYS = 90
+
     class Config:
         env_file = ".env"
 

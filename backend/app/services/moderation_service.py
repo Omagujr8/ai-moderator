@@ -10,6 +10,7 @@ from app.core.logging import logger
 from app.ai.nlp.toxicity_multilingual import analyze_text_multilingual
 from app.ai.nlp.language_detect import detect_language
 from app.services.video_moderation_service import moderate_video
+from app.services.pii_service import mask_email, hash_username
 import time
 from app.core.metrics import (
     moderation_requests_total,
@@ -41,6 +42,7 @@ def run_moderation(content_id:int):
     decision = "approved"
 
     if content.text:
+        clean_text = mask_email(content.text)
         lang = detect_language(content.text)
 
         if lang == "en":
@@ -69,6 +71,7 @@ def run_moderation(content_id:int):
             decision = "blocked"
 
     moderation_decisions_total.labels(decision=decision).inc()
+    content.username_hashed = hash_username(content.username)
 
     content.status = decision
     db.commit()
