@@ -9,6 +9,7 @@ class Content(Base):
     external_id = Column(String, index=True)
     text = Column(Text, nullable=True)
     image_url = Column(String, nullable=True)
+    video_url = Column(String, nullable=True)
 
     content_type = Column(String, index=True)
     source_app = Column(String, index=True)

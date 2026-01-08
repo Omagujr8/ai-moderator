@@ -9,6 +9,7 @@ from app.services.webhook_service import send_webhook
 from app.core.logging import logger
 from app.ai.nlp.toxicity_multilingual import analyze_text_multilingual
 from app.ai.nlp.language_detect import detect_language
+from app.services.video_moderation_service import moderate_video
 
 def save_results(db, content_id, results, decision):
     for r in results:
@@ -43,6 +44,11 @@ def run_moderation(content_id:int):
     if content.image_url:
         image_results = analyze_image(content.image_url)
         if image_results:
+            decision = "blocked"
+
+    if content.video_url:
+        safe = moderate_video(content.video_url)
+        if not safe:
             decision = "blocked"
 
     content.status = decision
