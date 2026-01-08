@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.content import Content
 from app.core.database import SessionLocal
-from app.core.config import DELETE_AFTER_DAYS
+from app.core.config import settings
 import logging
 
 logger = logging.getLogger("moderator_cleanup")

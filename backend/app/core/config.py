@@ -1,7 +1,8 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    APP_NAME: str
+    APP_NAME: str = "AI Moderator"
+    DELETE_AFTER_DAYS: int = 90
     ENV:str
 
     DATABASE_URL:str
@@ -11,8 +12,6 @@ class Settings(BaseSettings):
 
     REDIS_URL:str
     API_KEY_HEADER:str
-
-    DELETE_AFTER_DAYS = 90
 
     class Config:
         env_file = ".env"
