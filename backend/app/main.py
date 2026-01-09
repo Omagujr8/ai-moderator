@@ -7,6 +7,7 @@ from app.core.rate_limit import limiter
 from prometheus_fastapi_instrumentator import Instrumentator
 from apscheduler.schedulers.background import BackgroundScheduler
 from app.services.cleanup_service import cleanup_old_content
+from app.core.logging import logger
 
 app = FastAPI(title=settings.APP_NAME)
 
@@ -35,3 +36,13 @@ scheduler.start()
 def root():
     return {"status": "Ok", "Service": settings.APP_NAME}
 
+@app.get("/health")
+def health():
+    return {
+        "api": "ok",
+        "env": settings.ENV
+    }
+
+@app.on_event("shutdown")
+def shutdown():
+    logger.info("Shutting down cleanly")

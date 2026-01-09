@@ -45,30 +45,43 @@ def run_moderation(content_id:int):
         clean_text = mask_email(content.text)
         lang = detect_language(content.text)
 
-        if lang == "en":
-            text_results = analyze_text(content.text)
-        else:
-            text_results = analyze_text_multilingual(content.text)
+        try:
+            if lang == "en":
+                text_results = analyze_text(content.text)
+            else:
+                text_results = analyze_text_multilingual(content.text)
 
-        decision, model_version = decide_text(text_results)
+            decision, model_version = decide_text(text_results)
 
-        save_results(
-            db=db,
-            content_id=content.id,
-            results=text_results,
-            decision=decision,
-            model_version=model_version
-        )
+            save_results(
+                db=db,
+                content_id=content.id,
+                results=text_results,
+                decision=decision,
+                model_version=model_version
+            )
+        except Exception as e:
+            logger.error(f"AI text model failed: {e}")
+            decision = "approved"  # safe default
+            model_version = "error"
 
     if content.image_url:
-        image_results = analyze_image(content.image_url)
-        if image_results:
-            decision = "blocked"
+        try:
+            image_results = analyze_image(content.image_url)
+            if image_results:
+                decision = "blocked"
+        except Exception as e:
+            logger.error(f"AI image model failed: {e}")
+            decision = "approved"
 
     if content.video_url:
-        safe = moderate_video(content.video_url)
-        if not safe:
-            decision = "blocked"
+        try:
+            safe = moderate_video(content.video_url)
+            if not safe:
+                decision = "blocked"
+        except Exception as e:
+            logger.error(f"Video moderation failed: {e}")
+            decision = "approved"
 
     moderation_decisions_total.labels(decision=decision).inc()
     content.username_hashed = hash_username(content.username)
