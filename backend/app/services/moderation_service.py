@@ -79,6 +79,9 @@ def run_moderation(content_id:int):
     logger.info(
         f"Content {content.id} | Decision: {decision} | Source: {content.source_app}"
     )
+    logger.info(
+        f"Moderation took {time.time() - start_time:.2f}s"
+    )
 
     payload = {
         "content_id": content_id,

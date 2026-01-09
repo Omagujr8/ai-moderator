@@ -16,7 +16,7 @@ router = APIRouter(prefix="/moderation", tags=["Moderation"])
     dependencies=[Depends(verify_api_key)]
 )
 @limiter.limit("30/minute")
-def analyse_content(
+async def analyse_content(
     request: Request,
     payload: ContentCreate,
     db: Session = Depends(get_db)

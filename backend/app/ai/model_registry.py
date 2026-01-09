@@ -1,3 +1,7 @@
+from transformers import pipeline
+
+toxicity_model = pipeline("text-classification", model="unitary/toxic-bert")
+
 TOXICITY_MODEL_V1 = "toxicity_v1.1"
 TOXICITY_MODEL_V2 = "toxicity_v1.2"
 
