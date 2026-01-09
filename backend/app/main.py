@@ -25,7 +25,6 @@ app.add_exception_handler(
 app.include_router(
     moderation_router,
     prefix="/api/v1",
-    tags=["Moderation"]
 )
 
 scheduler = BackgroundScheduler()
