@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch, MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
@@ -33,11 +34,19 @@ def db(db_engine):
 
 @pytest.fixture
 def client(db):
+    """Provide test client with mocked Celery to avoid Redis dependency."""
     def override_get_db():
         try:
             yield db
         finally:
             pass
+
+    # Mock Celery tasks to avoid Redis connection errors in test environment
+    with patch("app.core.celery.celery_app") as mock_celery:
+        # Make the celery_app and its tasks behave like real Celery mocks
+        mock_task = MagicMock()
+        mock_task.delay = MagicMock(return_value=MagicMock(id="test-task-id"))
+        mock_celery.task = MagicMock(return_value=lambda f: mock_task)
 
     app.dependency_overrides[get_db] = override_get_db
     return TestClient(app)

@@ -5,8 +5,6 @@ from app.api.v1.moderation import router as moderation_router
 from slowapi.errors import RateLimitExceeded
 from app.core.rate_limit import limiter
 from prometheus_fastapi_instrumentator import Instrumentator
-from apscheduler.schedulers.background import BackgroundScheduler
-from app.services.cleanup_service import cleanup_old_content
 from app.core.logging import logger
 
 app = FastAPI(title=settings.APP_NAME)
@@ -28,9 +26,13 @@ app.include_router(
     prefix="/api/v1",
 )
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(cleanup_old_content, "interval", days=1)
-scheduler.start()
+# Scheduler disabled on Windows (APScheduler has issues with billiard on Windows)
+# Enable in production with proper deployment setup
+# from apscheduler.schedulers.background import BackgroundScheduler
+# from app.services.cleanup_service import cleanup_old_content
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(cleanup_old_content, "interval", days=1)
+# scheduler.start()
 
 @app.get("/")
 def root():

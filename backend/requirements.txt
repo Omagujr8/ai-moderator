@@ -4,6 +4,7 @@ sqlalchemy
 psycopg2-binary
 alembic
 pydantic
+pydantic-settings
 transformers
 torch
 opencv-python
@@ -12,5 +13,11 @@ celery
 redis
 python-jose
 python-dotenv
-celery
-redis
+slowapi
+prometheus-fastapi-instrumentator
+apscheduler
+pytest
+pytest-cov
+httpx
+locust
+python-json-logger
