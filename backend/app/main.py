@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.api.v1.moderation import router as moderation_router
@@ -12,6 +12,8 @@ app = FastAPI(title=settings.APP_NAME)
 Instrumentator().instrument(app).expose(app)
 
 app.state.limiter = limiter
+
+connections: list[WebSocket] = []
 
 app.add_exception_handler(
     RateLimitExceeded,
@@ -44,6 +46,20 @@ def health():
         "api": "ok",
         "env": settings.ENV
     }
+
+@app.websocket("/ws/moderation")
+async def moderation_ws(ws: WebSocket):
+    await ws.accept()
+    connections.append(ws)
+    logger.info("WebSocket connected")
+
+    try:
+        while True:
+            await ws.receive_text()
+    except Exception:
+        logger.info("WebSocket disconnected")
+        connections.remove(ws)
+
 
 @app.on_event("shutdown")
 def shutdown():

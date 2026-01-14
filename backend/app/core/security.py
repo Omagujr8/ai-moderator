@@ -13,3 +13,12 @@ def verify_api_key(api_key: str = Security(APIKeyHeader(name="X-API-KEY"))):
         raise HTTPException(status_code=403, detail="Invalid API key")
     return API_KEYS[api_key]
 
+def require_role(required_role: str):
+    def checker(user=Depends(get_current_user)):
+        if user.role != required_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions"
+            )
+        return user
+    return checker

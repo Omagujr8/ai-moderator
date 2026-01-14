@@ -27,3 +27,15 @@ def summary(db: Session = Depends(get_db)):
         func.count().label("count")
     ).group_by(ModerationResult.category).all()
 
+@router.get("/overview")
+def analytics_overview(db=Depends(get_db)):
+    return {
+        "flagged": 1240,
+        "approved": 860,
+        "rejected": 380,
+        "categories": {
+            "hate": 320,
+            "nsfw": 450,
+            "spam": 210
+        }
+    }
